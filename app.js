@@ -6,12 +6,13 @@
 // ---- Firebase Config ----
 // Replace these values with your own Firebase project config
 const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_PROJECT.firebaseapp.com",
-  projectId: "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_PROJECT.appspot.com",
-  messagingSenderId: "000000000000",
-  appId: "YOUR_APP_ID"
+  apiKey: "AIzaSyDgTdYlGQkj3iwOtT8MLHSP-bB377cdgVM",
+  authDomain: "work-management-778b2.firebaseapp.com",
+  projectId: "work-management-778b2",
+  storageBucket: "work-management-778b2.firebasestorage.app",
+  messagingSenderId: "224261169207",
+  appId: "1:224261169207:web:02ae724a70bc1dd4dddfb2",
+  measurementId: "G-TP2X54EF09"
 };
 
 firebase.initializeApp(firebaseConfig);
@@ -256,7 +257,7 @@ document.querySelectorAll(".column").forEach(column => {
       if (id && newStatus && newStatus !== prevStatus) {
         moveTask(id, newStatus, prevStatus);
       }
-    } catch (_) {}
+    } catch (_) { }
 
   });
 });
