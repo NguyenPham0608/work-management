@@ -59,6 +59,23 @@
           autocomplete="off" />
         <input type="text" id="task-assignee" class="assignee-input" placeholder="Assignee (optional)" maxlength="30"
           autocomplete="off" />
+        <div class="deadline-wrapper" id="deadline-wrapper">
+          <button type="button" class="deadline-toggle" id="deadline-toggle" title="Set deadline">
+            <svg class="deadline-icon-svg" width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <rect x="2" y="3" width="12" height="11" rx="2" stroke="currentColor" stroke-width="1.3"/>
+              <path d="M2 6.5H14" stroke="currentColor" stroke-width="1.3"/>
+              <path d="M5.5 1.5V4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+              <path d="M10.5 1.5V4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+            </svg>
+          </button>
+          <button type="button" class="deadline-pill" id="deadline-pill" style="display:none;">
+            <span class="deadline-label" id="deadline-label"></span>
+            <svg class="deadline-pill-x" width="10" height="10" viewBox="0 0 10 10" fill="none">
+              <path d="M2.5 2.5L7.5 7.5M7.5 2.5L2.5 7.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+            </svg>
+          </button>
+          <input type="datetime-local" id="task-deadline" class="deadline-input-hidden" tabindex="-1" />
+        </div>
         <button id="add-task-btn" class="add-task-btn" disabled>
           <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
             <path d="M10 4V16M4 10H16" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
@@ -123,6 +140,13 @@
       <div class="task-content">
         <span class="task-text"></span>
         <span class="task-assignee-badge"></span>
+      </div>
+      <div class="task-countdown" data-deadline="" style="display:none;">
+        <svg class="countdown-icon" width="12" height="12" viewBox="0 0 12 12" fill="none">
+          <circle cx="6" cy="6" r="5" stroke="currentColor" stroke-width="1.2"/>
+          <path d="M6 3.5V6L7.5 7" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <span class="countdown-text"></span>
       </div>
       <div class="task-meta">
         <span class="task-time"></span>

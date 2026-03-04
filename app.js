@@ -22,6 +22,10 @@ const tasksRef = db.collection("tasks");
 // ---- DOM Elements ----
 const taskInput = document.getElementById("task-input");
 const assigneeInput = document.getElementById("task-assignee");
+const deadlineInput = document.getElementById("task-deadline");
+const deadlineToggle = document.getElementById("deadline-toggle");
+const deadlineLabel = document.getElementById("deadline-label");
+const deadlinePill = document.getElementById("deadline-pill");
 const addBtn = document.getElementById("add-task-btn");
 const todoList = document.getElementById("todo-list");
 const inProgressList = document.getElementById("in-progress-list");
@@ -68,6 +72,34 @@ assigneeInput.addEventListener("keydown", (e) => {
   }
 });
 
+// Deadline toggle — click icon to open native picker
+deadlineToggle.addEventListener("click", () => {
+  deadlineInput.showPicker ? deadlineInput.showPicker() : deadlineInput.click();
+});
+
+deadlineInput.addEventListener("change", () => {
+  if (deadlineInput.value) {
+    const d = new Date(deadlineInput.value);
+    deadlineLabel.textContent = d.toLocaleDateString("en-US", {
+      month: "short", day: "numeric"
+    }) + ", " + d.toLocaleTimeString("en-US", {
+      hour: "numeric", minute: "2-digit"
+    });
+    deadlinePill.style.display = "";
+  } else {
+    clearDeadline();
+  }
+});
+
+// Click the pill to clear the deadline
+deadlinePill.addEventListener("click", clearDeadline);
+
+function clearDeadline() {
+  deadlineInput.value = "";
+  deadlineLabel.textContent = "";
+  deadlinePill.style.display = "none";
+}
+
 addBtn.addEventListener("click", addTask);
 
 // ---- Add Task ----
@@ -76,17 +108,21 @@ function addTask() {
   if (!text) return;
 
   const assignee = assigneeInput.value.trim();
+  const deadlineVal = deadlineInput.value;
+  const deadline = deadlineVal ? new Date(deadlineVal).toISOString() : null;
 
   tasksRef.add({
     text,
     assignee,
     status: "todo",
+    deadline,
     createdAt: firebase.firestore.FieldValue.serverTimestamp(),
     order: Date.now()
   });
 
   taskInput.value = "";
   assigneeInput.value = "";
+  clearDeadline();
   addBtn.disabled = true;
   taskInput.focus();
 
@@ -149,6 +185,14 @@ function createTaskCard(doc) {
     timeEl.textContent = formatTime(data.createdAt.toDate());
   } else {
     timeEl.textContent = "just now";
+  }
+
+  // Deadline countdown
+  const countdownEl = card.querySelector(".task-countdown");
+  if (data.deadline && data.status !== "done") {
+    countdownEl.style.display = "";
+    countdownEl.dataset.deadline = data.deadline;
+    updateCountdown(countdownEl);
   }
 
   // Done styling
@@ -453,12 +497,59 @@ window.addEventListener("resize", () => {
   confettiCanvas.height = window.innerHeight;
 });
 
-// ---- Update times periodically ----
+// ---- Countdown System ----
+function updateCountdown(el) {
+  const deadline = new Date(el.dataset.deadline);
+  const now = new Date();
+  const diff = deadline - now;
+
+  // Remove old urgency classes
+  el.classList.remove("urgency-relaxed", "urgency-upcoming", "urgency-urgent", "urgency-critical", "urgency-overdue");
+
+  if (diff <= 0) {
+    // Overdue
+    const absDiff = Math.abs(diff);
+    const h = Math.floor(absDiff / 3600000);
+    const m = Math.floor((absDiff % 3600000) / 60000);
+    el.querySelector(".countdown-text").textContent = `OVERDUE by ${h}h ${m}m`;
+    el.classList.add("urgency-overdue");
+    return;
+  }
+
+  const days = Math.floor(diff / 86400000);
+  const hrs = Math.floor((diff % 86400000) / 3600000);
+  const mins = Math.floor((diff % 3600000) / 60000);
+  const secs = Math.floor((diff % 60000) / 1000);
+
+  let text;
+  if (days > 0) {
+    text = `${days}d ${hrs}h ${mins}m ${secs}s`;
+  } else if (hrs > 0) {
+    text = `${hrs}h ${mins}m ${secs}s`;
+  } else {
+    text = `${mins}m ${secs}s`;
+  }
+
+  el.querySelector(".countdown-text").textContent = text;
+
+  // Urgency tiers
+  const hoursLeft = diff / 3600000;
+  if (hoursLeft > 24) {
+    el.classList.add("urgency-relaxed");
+  } else if (hoursLeft > 6) {
+    el.classList.add("urgency-upcoming");
+  } else if (hoursLeft > 1) {
+    el.classList.add("urgency-urgent");
+  } else {
+    el.classList.add("urgency-critical");
+  }
+}
+
+// Tick every second
 setInterval(() => {
-  document.querySelectorAll(".task-card").forEach(card => {
-    const timeEl = card.querySelector(".task-time");
-    if (timeEl && timeEl._date) {
-      timeEl.textContent = formatTime(timeEl._date);
+  document.querySelectorAll(".task-countdown[data-deadline]").forEach(el => {
+    if (el.dataset.deadline) {
+      updateCountdown(el);
     }
   });
-}, 60000);
+}, 1000);
