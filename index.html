@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Flow — Work Management</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <!-- Animated background blobs -->
+  <div class="bg-blobs">
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+    <div class="blob blob-3"></div>
+  </div>
+
+  <!-- Celebration overlay -->
+  <canvas id="confetti-canvas"></canvas>
+
+  <!-- Celebration toast -->
+  <div id="celebration-toast" class="celebration-toast">
+    <svg class="celebration-icon" width="20" height="20" viewBox="0 0 20 20" fill="none">
+      <circle cx="10" cy="10" r="9" stroke="#22c55e" stroke-width="1.5"/>
+      <path d="M6 10.5L8.5 13L14 7" stroke="#22c55e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+    <span class="celebration-text">Task completed! Great work.</span>
+  </div>
+
+  <div class="app">
+    <!-- Header -->
+    <header class="header">
+      <div class="header-left">
+        <div class="logo">
+          <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+            <rect width="32" height="32" rx="8" fill="url(#logo-grad)"/>
+            <path d="M10 16L14 20L22 12" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <defs>
+              <linearGradient id="logo-grad" x1="0" y1="0" x2="32" y2="32">
+                <stop stop-color="#6366f1"/>
+                <stop offset="1" stop-color="#a855f7"/>
+              </linearGradient>
+            </defs>
+          </svg>
+        </div>
+        <h1 class="app-title">Flow</h1>
+        <span class="app-subtitle">Work Management</span>
+      </div>
+      <div class="header-right"></div>
+    </header>
+
+    <!-- Add task bar -->
+    <div class="add-task-bar">
+      <div class="add-task-inner">
+        <input
+          type="text"
+          id="task-input"
+          class="task-input"
+          placeholder="What needs to be done?"
+          maxlength="200"
+          autocomplete="off"
+        />
+        <input
+          type="text"
+          id="task-assignee"
+          class="assignee-input"
+          placeholder="Assignee (optional)"
+          maxlength="30"
+          autocomplete="off"
+        />
+        <button id="add-task-btn" class="add-task-btn" disabled>
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+            <path d="M10 4V16M4 10H16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+          <span>Add Task</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Board -->
+    <div class="board">
+      <!-- Todo Column -->
+      <div class="column" data-status="todo">
+        <div class="column-header">
+          <div class="column-icon todo-icon">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="1.5"/>
+            </svg>
+          </div>
+          <h2 class="column-title">To Do</h2>
+          <span class="column-count" id="todo-count">0</span>
+        </div>
+        <div class="task-list" id="todo-list" data-status="todo"></div>
+      </div>
+
+      <!-- In Progress Column -->
+      <div class="column" data-status="in-progress">
+        <div class="column-header">
+          <div class="column-icon progress-icon">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="1.5" stroke-dasharray="4 2"/>
+            </svg>
+          </div>
+          <h2 class="column-title">In Progress</h2>
+          <span class="column-count" id="in-progress-count">0</span>
+        </div>
+        <div class="task-list" id="in-progress-list" data-status="in-progress"></div>
+      </div>
+
+      <!-- Done Column -->
+      <div class="column" data-status="done">
+        <div class="column-header">
+          <div class="column-icon done-icon">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <circle cx="8" cy="8" r="6" fill="currentColor" opacity="0.2"/>
+              <circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="1.5"/>
+              <path d="M5.5 8L7.2 9.7L10.5 6.3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <h2 class="column-title">Done</h2>
+          <span class="column-count" id="done-count">0</span>
+        </div>
+        <div class="task-list" id="done-list" data-status="done"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Task template -->
+  <template id="task-template">
+    <div class="task-card" draggable="true">
+      <div class="task-content">
+        <span class="task-text"></span>
+        <span class="task-assignee-badge"></span>
+      </div>
+      <div class="task-meta">
+        <span class="task-time"></span>
+        <div class="task-actions">
+          <button class="move-btn move-back" title="Move back" aria-label="Move back">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+              <path d="M8.5 3.5L5 7L8.5 10.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+          <button class="move-btn move-forward" title="Move forward" aria-label="Move forward">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+              <path d="M5.5 3.5L9 7L5.5 10.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+          <button class="delete-btn" title="Delete task" aria-label="Delete task">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+              <path d="M3.5 3.5L10.5 10.5M10.5 3.5L3.5 10.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </template>
+
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
